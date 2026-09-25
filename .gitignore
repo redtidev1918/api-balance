@@ -1,5 +1,5 @@
-# binaries
-api-balance
+# binaries (only root-level build artifact; NOT cmd/api-balance package dir)
+/api-balance
 *.deb
 /dist/
 # editor

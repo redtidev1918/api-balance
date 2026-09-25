@@ -20,6 +20,13 @@ type ProviderConfig struct {
 	APIKey     string `yaml:"api_key,omitempty"`     // inline (discouraged, warn)
 	APIKeyEnv  string `yaml:"api_key_env,omitempty"` // env var name holding the key
 
+	// Volcengine AK/SK (for GetCodingPlanUsage/GetAgentPlanAFPUsage).
+	// Either inline or via env vars. Both are required for volcengine.
+	AccessKey       string `yaml:"access_key,omitempty"`             // AccessKeyId
+	AccessKeyEnv    string `yaml:"access_key_env,omitempty"`         // env var holding AccessKeyId
+	SecretAccessKey string `yaml:"secret_access_key,omitempty"`      // SecretAccessKey
+	SecretAccessEnv string `yaml:"secret_access_key_env,omitempty"` // env var holding SecretAccessKey
+
 	// Custom provider spec (only for type: custom).
 	Endpoint string                 `yaml:"endpoint,omitempty"`
 	Method   string                 `yaml:"method,omitempty"`
@@ -181,6 +188,13 @@ func (c *Config) Validate() error {
 	for name, p := range c.Providers {
 		if p.Type == "" {
 			p.Type = "native"
+			c.Providers[name] = p
+		}
+		// volcengine uses AK/SK instead of an API key
+		if p.AccessKey != "" || p.AccessKeyEnv != "" || p.SecretAccessKey != "" || p.SecretAccessEnv != "" {
+			if (p.AccessKey == "" && p.AccessKeyEnv == "") || (p.SecretAccessKey == "" && p.SecretAccessEnv == "") {
+				return fmt.Errorf("provider %q: volcengine requires both access_key and secret_access_key", name)
+			}
 		}
 		if p.Type == "custom" {
 			if p.Endpoint == "" {
@@ -192,9 +206,10 @@ func (c *Config) Validate() error {
 				return fmt.Errorf("provider %q: custom extract needs at least one of balance/used/total/remaining", name)
 			}
 		}
-		// key resolution
-		if p.APIKey == "" && p.APIKeyEnv == "" {
-			return fmt.Errorf("provider %q: no api_key or api_key_env set", name)
+		// key resolution: native providers need either API key or AK/SK
+		usingAKSK := p.AccessKey != "" || p.AccessKeyEnv != "" || p.SecretAccessKey != "" || p.SecretAccessEnv != ""
+		if !usingAKSK && p.APIKey == "" && p.APIKeyEnv == "" {
+			return fmt.Errorf("provider %q: no api_key, api_key_env, or access_key/secret_access_key set", name)
 		}
 	}
 	if err := c.validateAuthKeys(); err != nil {
@@ -206,6 +221,16 @@ func (c *Config) Validate() error {
 // validateAuthKeys resolves env var indirections without leaking values.
 func (c *Config) validateAuthKeys() error {
 	for name, p := range c.Providers {
+		usingAKSK := p.AccessKey != "" || p.AccessKeyEnv != "" || p.SecretAccessKey != "" || p.SecretAccessEnv != ""
+		if usingAKSK {
+			if p.AccessKeyEnv != "" && os.Getenv(p.AccessKeyEnv) == "" {
+				return fmt.Errorf("provider %q: env %q is set but empty", name, p.AccessKeyEnv)
+			}
+			if p.SecretAccessEnv != "" && os.Getenv(p.SecretAccessEnv) == "" {
+				return fmt.Errorf("provider %q: env %q is set but empty", name, p.SecretAccessEnv)
+			}
+			continue
+		}
 		if p.APIKeyEnv != "" {
 			if os.Getenv(p.APIKeyEnv) == "" {
 				return fmt.Errorf("provider %q: env %q is set but empty", name, p.APIKeyEnv)
@@ -224,6 +249,8 @@ func (c *Config) validateAuthKeys() error {
 
 // KeyFor returns the resolved API key for a provider, or "" if configured via
 // an env that is absent. It never logs the value.
+// KeyFor returns the resolved API key for a provider, or "" if configured via
+// an env that is absent. It never logs the value.
 func KeyFor(p ProviderConfig) string {
 	if p.APIKey != "" {
 		return p.APIKey
@@ -233,6 +260,28 @@ func KeyFor(p ProviderConfig) string {
 	}
 	if p.Type == "custom" && p.Auth.TokenEnv != "" {
 		return os.Getenv(p.Auth.TokenEnv)
+	}
+	return ""
+}
+
+// AccessKeyFor resolves the Volcengine AccessKeyId (inline or via env).
+func AccessKeyFor(p ProviderConfig) string {
+	if p.AccessKey != "" {
+		return p.AccessKey
+	}
+	if p.AccessKeyEnv != "" {
+		return os.Getenv(p.AccessKeyEnv)
+	}
+	return ""
+}
+
+// SecretAccessKeyFor resolves the Volcengine SecretAccessKey (inline or via env).
+func SecretAccessKeyFor(p ProviderConfig) string {
+	if p.SecretAccessKey != "" {
+		return p.SecretAccessKey
+	}
+	if p.SecretAccessEnv != "" {
+		return os.Getenv(p.SecretAccessEnv)
 	}
 	return ""
 }

@@ -24,6 +24,8 @@ type Options struct {
 	Kind       Kind
 	Stability  Stability
 	APIKey     string
+	AccessKey  string // Volcengine AccessKeyId
+	SecretKey  string // Volcengine SecretAccessKey
 	Extra      map[string]interface{} // provider-specific settings
 	Timeout    time.Duration
 }

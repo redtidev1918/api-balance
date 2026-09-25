@@ -9,6 +9,7 @@ Kimi          ¥17.32
 SiliconFlow   ¥8.61
 OpenRouter    $12.43
 MiniMax       23% remaining
+volcengine-coding   11% remaining   (本周窗口, 2026-09-27 重置)
 ```
 
 ```console
@@ -36,9 +37,12 @@ watching every 30m0s (ctrl-c to stop)
 | SiliconFlow | balance | stable |
 | Moonshot / Kimi | balance | stable |
 | MiniMax | quota | experimental |
+| Volcengine Coding Plan | quota | experimental |
+| Volcengine Agent Plan | quota | experimental |
 | 任意自定义 (custom) | balance/quota/usage | — |
 
 - `experimental` = 使用未公开 / 易变动的端点,API 可能随服务商更新失效
+  - **Volcengine**:需火山引擎账号的 AccessKeyId + SecretAccessKey,调 `GetCodingPlanUsage` / `GetAgentPlanAFPUsage`(HMAC-SHA256 V4 签名)
 - `custom` = 用户通过配置从任意 JSON 接口提取余额
 
 ## 安装
@@ -102,6 +106,24 @@ notifications:
     url: "https://example.com/hook"
   recovery: true   # 余额恢复后发送恢复通知
 ```
+
+### Volcengine Coding Plan / Agent Plan
+
+查询**订阅套餐**的额度(已用 %、剩余 %、重置时间),需要火山引擎账号的 AK/SK(控制台 → IAM → Access Key 管理):
+
+```yaml
+providers:
+  volcengine-coding:
+    access_key_env: VOLC_AK
+    secret_access_key_env: VOLC_SK
+    threshold:
+      remaining_percent: 20   # 某窗口剩余低于 20% 告警
+  volcengine-agent:
+    access_key_env: VOLC_AK
+    secret_access_key_env: VOLC_SK
+```
+
+`VOLC_AK` / `VOLC_SK` 放环境变量(或 systemd env 文件)。未订阅 Agent Plan 时显示 100% remaining。**experimental**:端点为未公开 OpenAPI,可能随火山方舟更新失效。
 
 完整示例见 `docs/config.example.yaml`。
 

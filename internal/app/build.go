@@ -15,15 +15,18 @@ import (
 	"github.com/redtidev1918/api-balance/internal/provider/moonshot"
 	"github.com/redtidev1918/api-balance/internal/provider/openrouter"
 	"github.com/redtidev1918/api-balance/internal/provider/siliconflow"
+	"github.com/redtidev1918/api-balance/internal/provider/volcengine"
 )
 
 // BuiltinNames lists natives with their stability for the `providers` command.
 var BuiltinNames = map[string]provider.Stability{
-	deepseek.Name:     provider.StabilityStable,
-	openrouter.Name:   provider.StabilityStable,
-	siliconflow.Name:  provider.StabilityStable,
-	moonshot.Name:     provider.StabilityStable,
-	minimax.Name:      provider.StabilityExperimental,
+	deepseek.Name:            provider.StabilityStable,
+	openrouter.Name:          provider.StabilityStable,
+	siliconflow.Name:         provider.StabilityStable,
+	moonshot.Name:            provider.StabilityStable,
+	minimax.Name:             provider.StabilityExperimental,
+	volcengine.CodingPlanName: provider.StabilityExperimental,
+	volcengine.AgentPlanName:  provider.StabilityExperimental,
 }
 
 // BuildProviders turns configuration into a set of runnable providers.
@@ -65,6 +68,17 @@ func BuildProviders(cfg *config.Config, timeout time.Duration) (map[string]provi
 			out[name] = mustBuild(moonshot.New, provider.Options{Name: name, APIKey: key, Timeout: timeout, Extra: extraFrom(pc)})
 		case name == minimax.Name:
 			out[name] = mustBuild(minimax.New, provider.Options{Name: name, APIKey: key, Timeout: timeout, Extra: extraFrom(pc)})
+
+		case name == volcengine.CodingPlanName:
+			out[name] = mustBuild(volcengine.NewCoding, provider.Options{
+				Name: name, AccessKey: config.AccessKeyFor(pc), SecretKey: config.SecretAccessKeyFor(pc),
+				Timeout: timeout, Extra: extraFrom(pc),
+			})
+		case name == volcengine.AgentPlanName:
+			out[name] = mustBuild(volcengine.NewAgent, provider.Options{
+				Name: name, AccessKey: config.AccessKeyFor(pc), SecretKey: config.SecretAccessKeyFor(pc),
+				Timeout: timeout, Extra: extraFrom(pc),
+			})
 
 		case pc.Type != "":
 			return nil, fmt.Errorf("provider %q has unknown type %q", name, pc.Type)

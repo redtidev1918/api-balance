@@ -31,6 +31,20 @@ providers:
     threshold:
       remaining_percent: 20   # 剩余低于 20% 告警
 
+  # ---- Volcengine Ark Coding Plan / Agent Plan (experimental) ----
+  # 查询订阅套餐额度(5h / weekly / monthly 窗口已用百分比 + 重置时间)。
+  # 需火山引擎账号的 AccessKeyId + SecretAccessKey(控制台 IAM Access Key 管理)。
+  # 认证为 HMAC-SHA256 V4 签名,调 GetCodingPlanUsage / GetAgentPlanAFPUsage。
+  # 端点未公开文档,标记 experimental:可能随 Volcengine 更新失效。
+  volcengine-coding:            # Coding Plan
+    access_key_env: VOLC_AK
+    secret_access_key_env: VOLC_SK
+    threshold:
+      remaining_percent: 20     # 某窗口剩余低于 20% 告警
+  volcengine-agent:             # Agent Plan(未订阅时显示 100% remaining)
+    access_key_env: VOLC_AK
+    secret_access_key_env: VOLC_SK
+
   # ---- 自定义 Provider 示例 ---- #
   # 任意返回 JSON 的接口,用 JMESPath 提取字段
   my-other-api:

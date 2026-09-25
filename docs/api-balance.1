@@ -1,0 +1,48 @@
+.TH API-BALANCE 1 "September 2026" "api-balance 0.1.0" "User Commands"
+.SH NAME
+api-balance \- query and monitor AI API balances and quotas
+.SH SYNOPSIS
+.B api-balance
+[\fIcheck\fR|\fIwatch\fR|\fIproviders\fR|\fIconfig\fR|\fIversion\fR]
+.SH DESCRIPTION
+.B api-balance
+is a lightweight CLI for querying balances and quotas across multiple AI API
+providers (DeepSeek, OpenRouter, SiliconFlow, Moonshot/Kimi, MiniMax, and
+user-defined custom providers). It can run continuously in watch mode and
+send alerts to Telegram or a webhook when a balance or quota drops below a
+configured threshold.
+.SH COMMANDS
+.TP
+.B api-balance check [--json]
+Query all configured providers and print their balances/quotas.
+Add \fB--json\fR for machine-readable JSON output.
+.TP
+.B api-balance watch [--interval DURATION] [--once]
+Run the monitoring loop. The first check runs immediately, then repeats every
+\fIinterval\fR (default 30m). \fB--once\fR runs a single check + evaluate, useful
+for testing.
+.TP
+.B api-balance providers
+List built-in providers and their stability.
+.TP
+.B api-balance config validate [--config PATH]
+Validate the configuration file.
+.TP
+.B api-balance version
+Print the version.
+.SH CONFIGURATION
+Default search paths (lowest precedence first):
+.br
+/etc/api-balance/config.yaml
+.br
+~/.config/api-balance/config.yaml
+.PP
+API keys are read from environment variables named by \fBapi_key_env\fR, or from
+an inline \fBapi_key\fR field (discouraged; use chmod 600 on the config).
+.SH ENVIRONMENT
+Provider keys are read via the \fBapi_key_env\fR name. In systemd service mode,
+keys may be placed in /etc/api-balance/api-balance.env (chmod 600).
+.SH EXIT STATUS
+0 on success, 1 on configuration/provider errors, 2 on usage errors.
+.SH SEE ALSO
+.BR systemctl (1)

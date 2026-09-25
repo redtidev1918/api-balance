@@ -1,0 +1,78 @@
+# api-balance 示例配置
+# 复制到 ~/.config/api-balance/config.yaml 或 /etc/api-balance/config.yaml
+#
+# API key 建议用 api_key_env 指向环境变量,避免明文写配置。
+# 或把 key 写入 /etc/api-balance/api-balance.env (chmod 600),systemd 会自动加载。
+
+providers:
+  # ---- 内置 Provider ---- #
+  deepseek:
+    api_key_env: DEEPSEEK_API_KEY
+    threshold:
+      balance: 10        # 余额低于 ¥10 告警
+
+  openrouter:
+    api_key_env: OPENROUTER_API_KEY
+    threshold:
+      balance: 5         # USD 余额低于 $5 告警
+
+  siliconflow:
+    api_key_env: SILICONFLOW_API_KEY
+    threshold:
+      balance: 20
+
+  moonshot:            # Kimi
+    api_key_env: MOONSHOT_API_KEY
+    threshold:
+      balance: 30
+
+  minimax:             # 配额类型,按剩余百分比告警
+    api_key_env: MINIMAX_API_KEY
+    threshold:
+      remaining_percent: 20   # 剩余低于 20% 告警
+
+  # ---- 自定义 Provider 示例 ---- #
+  # 任意返回 JSON 的接口,用 JMESPath 提取字段
+  my-other-api:
+    type: custom
+    endpoint: "https://api.example.com/v1/balance"
+    method: GET
+    api_key: "在此填key或用 env 引用"   # 建议不要内联,用下面的 auth
+    # auth:
+    #   type: bearer          # bearer | header | query | basic
+    #   token_env: MY_API_KEY
+    extract:
+      balance: "data.balance"
+      currency: "data.currency"
+
+  quota-api:
+    type: custom
+    endpoint: "https://api.example.com/v1/quota"
+    method: GET
+    auth:
+      type: query
+      query_name: api_key
+      # token_env: MY_API_KEY
+    extract:
+      used: "data.used"
+      total: "data.total"
+      remaining: "data.available"
+
+# 每个周期并发的 Provider 数量
+concurrency: 5
+# watch 默认间隔
+watch_interval: 30m
+
+# 告警状态文件(去重/恢复)
+state_file: "/var/lib/api-balance/state.json"
+
+notifications:
+  telegram:
+    enabled: true
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    chat_id_env: TELEGRAM_CHAT_ID
+  webhook:
+    enabled: false
+    url: "https://example.com/hook"
+  # 余额恢复后是否发送恢复通知
+  recovery: true

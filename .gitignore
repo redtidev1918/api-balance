@@ -1,0 +1,10 @@
+# binaries
+api-balance
+*.deb
+/dist/
+# editor
+.idea/
+.vscode/
+# secrets
+*.pem
+.env

@@ -1,0 +1,26 @@
+[Unit]
+Description=api-balance - multi-provider AI API balance/quota monitor
+Documentation=man:api-balance(1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Runs the watch loop. Non-privileged user; no listening ports, no privileged caps.
+User=api-balance
+Group=api-balance
+ExecStart=/usr/bin/api-balance watch
+Restart=on-failure
+RestartSec=5
+# Provider keys come from this env file (root:root 600, systemd reads it as root
+# and passes the values to the service process). Do NOT put secrets in the unit.
+EnvironmentFile=-/etc/api-balance/api-balance.env
+# Hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/api-balance
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+{
+  "repo": "redtidev1918/api-balance",
+  "name": "api-balance",
+  "emoji": "⚖️",
+  "description": "多 Provider AI API 余额 / 配额查询与低余额监控 CLI",
+  "branch": "main",
+  "themeKey": "api-balance-theme",
+  "version": 1
+}

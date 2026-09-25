@@ -188,6 +188,14 @@ go vet ./...
 - 配置文件建议 `chmod 600`
 - systemd 服务以非 root 用户运行,带系统加固
 
+## 致谢
+
+本项目参考了以下出色的社区项目(仅作 API 端点与响应格式参考,不构成运行时依赖):
+
+- [akitaonrails/ai-usagebar](https://github.com/akitaonrails/ai-usagebar) — AI 用量/余额监控(Rust)
+- [Lottle7/dsh-quota](https://github.com/Lottle7/dsh-quota) — 可编程 AI API 余额查询(TypeScript)
+- [wenzetan/dsh-quota-panel](https://github.com/wenzetan/dsh-quota-panel) — dsh-quota 管理面板,Provider 目录实现最易读的参考
+
 ## 许可证
 
 MIT License。见 `LICENSE` 文件。

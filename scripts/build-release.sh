@@ -46,9 +46,9 @@ build_deb() {
 
   install -m 0755 "$src" "$root/usr/bin/api-balance"
   install -m 0644 packaging/systemd/api-balance.service "$root/lib/systemd/system/api-balance.service"
-  install -m 0644 docs/config.example.yaml "$root/usr/share/doc/api-balance/config.example.yaml"
-  gzip -9 -c docs/api-balance.1 > "$root/usr/share/man/man1/api-balance.1.gz"
-  install -m 0644 docs/api-balance.1 "$root/usr/lib/api-balance/api-balance.1"
+  install -m 0644 config.example.yaml "$root/usr/share/doc/api-balance/config.example.yaml"
+  gzip -9 -c man/api-balance.1 > "$root/usr/share/man/man1/api-balance.1.gz"
+  install -m 0644 man/api-balance.1 "$root/usr/lib/api-balance/api-balance.1"
 
   # control file
   mkdir -p "$root/DEBIAN"
